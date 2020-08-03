@@ -1,6 +1,5 @@
 ﻿using DV.ServicePenalty;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +12,8 @@ namespace DvMod.CustomFeeValidator
     static class Main
     {
         public static bool enabled;
-        public static bool loggingEnabled = true;
+        public static bool loggingEnabled;
         public static UnityModManager.ModEntry mod;
-        public static Preferences prefs = new Preferences();
 
         static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -94,46 +92,5 @@ namespace DvMod.CustomFeeValidator
                 return insts;
             }
         }
-
-        [HarmonyPatch(typeof(SaveGameManager), "Load")]
-        static class LoadPatch
-        {
-            static void Postfix()
-            {
-                try
-                {
-                    prefs = SaveGameManager.data.GetJObject(mod.Info.Id).ToObject<Preferences>();
-                }
-                catch (Exception e)
-                {
-                    mod.Logger.LogException("Failed to load preferences from save", e);
-                }
-            }
-
-        }
-
-        [HarmonyPatch(typeof(SaveGameManager), "Save")]
-        static class SavePatch
-        {
-            static bool Prefix()
-            {
-                try
-                {
-                    SaveGameManager.data.SetJObject(mod.Info.Id, JObject.FromObject(prefs));
-                }
-                catch (Exception e)
-                {
-                    mod.Logger.LogException("Failed to save preferences", e);
-                }
-                return true;
-            }
-        }
-    }
-
-    class Preferences
-    {
-        public bool includeLastLoco = true;
-        public bool includeLastTrainset = true;
-        public bool includeLocoResources = true;
     }
 }
