@@ -1,6 +1,6 @@
 {
   "Id": "CustomFeeValidator",
-  "DisplayName": "Custom FeeValidator",
+  "DisplayName": "Custom Fee Validator",
   "Author": "Zeibach",
   "Version": "0.1.0",
   "AssemblyName": "CustomFeeValidator.dll",
