@@ -13,12 +13,14 @@ namespace DvMod.CustomFeeValidator
     static class Main
     {
         public static bool enabled;
+        [SaveOnReload]
         public static bool loggingEnabled =
 #if DEBUG
             true;
 #else
             false;
 #endif
+        [SaveOnReload]
         public static FeeType selectedFeeType;
         public static UnityModManager.ModEntry mod;
 
