@@ -66,11 +66,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir "$(SolutionDir)dv\Mods\$(SolutionName)"
-copy $(TargetPath) "$(SolutionDir)dv\Mods\$(SolutionName)\"
-copy $(SolutionDir)Info.json "$(SolutionDir)dv\Mods\$(SolutionName)\"
+    <PostBuildEvent>mkdir "$(ProjectDir)dv\Mods\$(ProjectName)"
+copy $(TargetPath) "$(ProjectDir)dv\Mods\$(ProjectName)\"
+copy $(ProjectDir)Info.json "$(ProjectDir)dv\Mods\$(ProjectName)\"
 if $(Configuration) == Release (
-  powershell Compress-Archive -DestinationPath '$(SolutionDir)$(SolutionName).zip' -Path '"$(SolutionDir)dv\Mods\$(SolutionName)\' -Force
+  powershell Compress-Archive -DestinationPath '$(ProjectDir)$(ProjectName).zip' -Path '"$(ProjectDir)dv\Mods\$(ProjectName)\' -Force
 )</PostBuildEvent>
   </PropertyGroup>
 </Project>
