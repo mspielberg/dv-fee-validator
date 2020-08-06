@@ -12,7 +12,12 @@ namespace DvMod.CustomFeeValidator
     static class Main
     {
         public static bool enabled;
-        public static bool loggingEnabled;
+        public static bool loggingEnabled =
+#if DEBUG
+            true;
+#else
+            false;
+#endif
         public static UnityModManager.ModEntry mod;
 
         static bool Load(UnityModManager.ModEntry modEntry)
