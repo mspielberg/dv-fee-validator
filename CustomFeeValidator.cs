@@ -3,9 +3,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityModManagerNet;
-using Newtonsoft.Json.Linq;
 
 namespace DvMod.CustomFeeValidator
 {
@@ -14,34 +12,18 @@ namespace DvMod.CustomFeeValidator
     {
         public static bool enabled;
         [SaveOnReload]
-        public static bool loggingEnabled =
-#if DEBUG
-            true;
-#else
-            false;
-#endif
-        [SaveOnReload]
-        public static FeeType selectedFeeType;
+        public static Settings settings;
         public static UnityModManager.ModEntry mod;
-
-        public enum FeeType
-		{
-            ignore_fees_from_train_with_last_loco,
-            ignore_all_loco_fees_until_despawned,
-		}
-        private static List<string> feeTypeNames = Enum.GetNames(typeof(FeeType)).ToList();
-
-        private const string SAVE_DATA_PRIMARY_KEY = "CustomFeeValidator";
-        private const string SAVE_DATA_VERSION_KEY = "Version";
-        private const string SAVE_DATA_FEE_TYPE_KEY = "FeeType";
 
         static bool Load(UnityModManager.ModEntry modEntry)
         {
+            try { settings = Settings.Load<Settings>(modEntry); } catch { }
             var harmony = new Harmony(modEntry.Info.Id);
             harmony.PatchAll();
 
             mod = modEntry;
             modEntry.OnGUI = OnGui;
+            modEntry.OnSaveGUI = OnSaveGui;
             modEntry.OnToggle = OnToggle;
             modEntry.OnUnload = OnUnload;
 
@@ -50,21 +32,13 @@ namespace DvMod.CustomFeeValidator
 
         static void OnGui(UnityModManager.ModEntry modEntry)
         {
-            loggingEnabled = GUILayout.Toggle(loggingEnabled, "enable logging");
-            GUILayout.Label("Fee Validation Type:");
-            try
-            {
-                selectedFeeType = (FeeType)Enum.Parse(typeof(FeeType), feeTypeNames.ElementAt(GUILayout.SelectionGrid(
-                    feeTypeNames.IndexOf(selectedFeeType.ToString()),
-                    feeTypeNames.Select(name => name.Replace('_', ' ')).ToArray(),
-                    1, // # of columns
-                    GUI.skin.toggle)));
-            }
-            catch (ArgumentException)
-			{
-                selectedFeeType = FeeType.ignore_fees_from_train_with_last_loco;
-			}
+            settings.Draw(modEntry);
         }
+
+        static void OnSaveGui(UnityModManager.ModEntry modEntry)
+		{
+            settings.Save(modEntry);
+		}
 
         static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
@@ -82,7 +56,7 @@ namespace DvMod.CustomFeeValidator
 
         static void DebugLog(string message)
         {
-            if (loggingEnabled)
+            if (settings.isLoggingEnabled)
                 mod.Logger.Log(message);
         }
 
@@ -96,41 +70,47 @@ namespace DvMod.CustomFeeValidator
             if (!enabled)
                 return debt.GetTotalPrice();
 
-            switch (selectedFeeType) {
-                case FeeType.ignore_fees_from_train_with_last_loco:
-                    {
-                        ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
-                        if (locoDebt == null)
-                            return debt.GetTotalPrice();
-
-                        var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == locoDebt.ID);
-                        if (locoInTrainset != null)
-                        {
-                            float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
-                            DebugLog($"Locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}.");
-                            return fees;
-                        }
-                        DebugLog($"Locomotive {debt.ID} not found in last trainset.");
-                        return debt.GetTotalPrice();
-                    }
-                case FeeType.ignore_all_loco_fees_until_despawned:
-                    {
-                        ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
-                        if (locoDebt == null)
-                            return debt.GetTotalPrice();
-
-                        TrainCar indebtedLoco = TrainCar.logicCarToTrainCar.Values.FirstOrDefault(tc => tc.ID == locoDebt.ID);
-                        if (indebtedLoco != null)
-                        {
-                            DebugLog($"Locomotive {indebtedLoco.ID} still exists; ignoring its fees.");
-                            return 0;
-                        }
-                        DebugLog($"Locomotive {locoDebt.ID} cannot be found, thus it must have been destroyed.");
-                        return debt.GetTotalPrice();
-                    }
+            switch (settings.selectedValidationType) {
+                case FeeValidationType.LastLoco:
+                    return GetTotalDebtForFeeValidationTypeLastLoco(debt);
+                case FeeValidationType.ExistingLocos:
+                    return GetTotalDebtForFeeValidationTypeExistingLocos(debt);
             }
 
-            DebugLog($"This should never happen. In case it does, the selected fee type is {selectedFeeType}.");
+            DebugLog($"This should never happen. In case it does, the selected fee type is {settings.selectedValidationType}.");
+            return debt.GetTotalPrice();
+        }
+
+        private static float GetTotalDebtForFeeValidationTypeLastLoco(DisplayableDebt debt)
+		{
+            ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
+            if (locoDebt == null)
+                return debt.GetTotalPrice();
+
+            var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == locoDebt.ID);
+            if (locoInTrainset != null)
+            {
+                float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
+                DebugLog($"Locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}.");
+                return fees;
+            }
+            DebugLog($"Locomotive {debt.ID} not found in last trainset.");
+            return debt.GetTotalPrice();
+        }
+
+        private static float GetTotalDebtForFeeValidationTypeExistingLocos(DisplayableDebt debt)
+		{
+            ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
+            if (locoDebt == null)
+                return debt.GetTotalPrice();
+
+            TrainCar indebtedLoco = TrainCar.logicCarToTrainCar.Values.FirstOrDefault(tc => tc.ID == locoDebt.ID);
+            if (indebtedLoco != null)
+            {
+                DebugLog($"Locomotive {indebtedLoco.ID} still exists; ignoring its fees.");
+                return 0;
+            }
+            DebugLog($"Locomotive {locoDebt.ID} cannot be found, thus it must have been destroyed.");
             return debt.GetTotalPrice();
         }
 
@@ -144,65 +124,6 @@ namespace DvMod.CustomFeeValidator
                 foreach (var call in calls)
                     call.operand = typeof(Main).GetMethod("GetTotalDebtForJobPurposes");
                 return insts;
-            }
-        }
-
-        [HarmonyPatch(typeof(SaveGameManager), "Save")]
-        class SaveGameManager_Save_Patch
-        {
-            static void Prefix(SaveGameManager __instance)
-            {
-                try
-                {
-                    JObject saveData = new JObject(
-                        new JProperty(SAVE_DATA_VERSION_KEY, new JValue(mod.Version.ToString())),
-                        new JProperty(SAVE_DATA_FEE_TYPE_KEY, selectedFeeType.ToString()));
-
-                    SaveGameManager.data.SetJObject(SAVE_DATA_PRIMARY_KEY, saveData);
-                }
-                catch (Exception e)
-                {
-                    DebugLog($"Saving mod settings failed with exception:\n{e}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(SaveGameManager), "Load")]
-        class SaveGameManager_Load_Patch
-        {
-            static void Postfix(SaveGameManager __instance)
-            {
-                try
-                {
-                    JObject saveData = SaveGameManager.data.GetJObject(SAVE_DATA_PRIMARY_KEY);
-
-                    if (saveData == null)
-                    {
-                        DebugLog("Not loading save data: primary object was null.");
-                        return;
-                    }
-
-                    string feeTypeName = (string)saveData[SAVE_DATA_FEE_TYPE_KEY];
-                    if (feeTypeName != null)
-                    {
-                        try
-                        {
-                            selectedFeeType = (FeeType)Enum.Parse(typeof(FeeType), feeTypeName);
-                        }
-                        catch (ArgumentException)
-                        {
-                            DebugLog($"Could not parse fee type from save data: {feeTypeName}");
-                            selectedFeeType = FeeType.ignore_fees_from_train_with_last_loco;
-                        }
-                    } else
-					{
-                        DebugLog("No fee type found in mod save data.");
-					}
-                }
-                catch (Exception e)
-                {
-                    DebugLog($"Loading mod settings failed with exception:\n{e}");
-                }
             }
         }
     }
