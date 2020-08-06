@@ -51,12 +51,14 @@ namespace DvMod.CustomFeeValidator
         static void OnGui(UnityModManager.ModEntry modEntry)
         {
             loggingEnabled = GUILayout.Toggle(loggingEnabled, "enable logging");
+            GUILayout.Label("Fee Validation Type:");
             try
             {
                 selectedFeeType = (FeeType)Enum.Parse(typeof(FeeType), feeTypeNames.ElementAt(GUILayout.SelectionGrid(
                     feeTypeNames.IndexOf(selectedFeeType.ToString()),
                     feeTypeNames.Select(name => name.Replace('_', ' ')).ToArray(),
-                    feeTypeNames.Count)));
+                    1, // # of columns
+                    GUI.skin.toggle)));
             }
             catch (ArgumentException)
 			{
