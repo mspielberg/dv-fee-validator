@@ -2,7 +2,7 @@
 
 namespace DvMod.CustomFeeValidator
 {
-	class Settings : UnityModManager.ModSettings, IDrawable
+	public class Settings : UnityModManager.ModSettings, IDrawable
 	{
         [Draw("Enable logging")] public bool isLoggingEnabled =
 #if DEBUG
