@@ -9,6 +9,6 @@ Other fee checking policies are possible to implement on request.
 # Contributing
 
 1. Fork this repository and clone the fork
-1. Create a directory junction from local repo lib to your Derail Valley install: `mklink /J "PATH\TO\dv-fee-validator\lib" "PATH\TO\Derail Valley\DerailValley_Data\Managed"`
+1. Create a directory junction named dv in the local repo targeting your Derail Valley installation: `mklink /J "PATH\TO\dv-fee-validator\dv" "PATH\TO\Derail Valley"`
 1. Make your changes, build, and TEST, TEST, TEST!
 1. Open a pull request
