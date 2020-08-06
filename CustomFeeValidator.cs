@@ -104,14 +104,8 @@ namespace DvMod.CustomFeeValidator
             if (locoDebt == null)
                 return debt.GetTotalPrice();
 
-            TrainCar indebtedLoco = TrainCar.logicCarToTrainCar.Values.FirstOrDefault(tc => tc.ID == locoDebt.ID);
-            if (indebtedLoco != null)
-            {
-                DebugLog($"Locomotive {indebtedLoco.ID} still exists; ignoring its fees.");
-                return 0;
-            }
-            DebugLog($"Locomotive {locoDebt.ID} cannot be found, thus it must have been destroyed.");
-            return debt.GetTotalPrice();
+            DebugLog($"Locomotive {locoDebt.ID} still exists; ignoring its fees.");
+            return 0;
         }
 
         [HarmonyPatch(typeof(CareerManagerDebtController), "IsPlayerAllowedToTakeJob")]
