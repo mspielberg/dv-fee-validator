@@ -11,7 +11,6 @@ namespace DvMod.CustomFeeValidator
     static class Main
     {
         public static bool enabled;
-        [SaveOnReload]
         public static Settings settings;
         public static UnityModManager.ModEntry mod;
 
