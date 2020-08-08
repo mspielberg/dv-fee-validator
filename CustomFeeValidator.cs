@@ -82,29 +82,28 @@ namespace DvMod.CustomFeeValidator
 
         private static float GetTotalDebtForFeeValidationTypeLastLoco(DisplayableDebt debt)
         {
-            ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
-            if (locoDebt == null)
-                return debt.GetTotalPrice();
-
-            var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == locoDebt.ID);
-            if (locoInTrainset != null)
+            if (debt is ExistingLocoDebt)
             {
-                float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
-                DebugLog($"Locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}.");
-                return fees;
+                var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == debt.ID);
+                if (locoInTrainset != null)
+                {
+                    float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
+                    DebugLog($"Locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}.");
+                    return fees;
+                }
+                DebugLog($"Locomotive {debt.ID} not found in last trainset.");
             }
-            DebugLog($"Locomotive {debt.ID} not found in last trainset.");
             return debt.GetTotalPrice();
         }
 
         private static float GetTotalDebtForFeeValidationTypeExistingLocos(DisplayableDebt debt)
         {
-            ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
-            if (locoDebt == null)
-                return debt.GetTotalPrice();
-
-            DebugLog($"Locomotive {locoDebt.ID} still exists; ignoring its fees.");
-            return 0;
+            if (debt is ExistingLocoDebt)
+            {
+                DebugLog($"Locomotive {debt.ID} still exists; ignoring its fees.");
+                return 0;
+            }
+            return debt.GetTotalPrice();
         }
 
         [HarmonyPatch(typeof(CareerManagerDebtController), "IsPlayerAllowedToTakeJob")]
