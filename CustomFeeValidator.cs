@@ -35,9 +35,9 @@ namespace DvMod.CustomFeeValidator
         }
 
         static void OnSaveGui(UnityModManager.ModEntry modEntry)
-		{
+        {
             settings.Save(modEntry);
-		}
+        }
 
         static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
@@ -81,7 +81,7 @@ namespace DvMod.CustomFeeValidator
         }
 
         private static float GetTotalDebtForFeeValidationTypeLastLoco(DisplayableDebt debt)
-		{
+        {
             ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
             if (locoDebt == null)
                 return debt.GetTotalPrice();
@@ -98,7 +98,7 @@ namespace DvMod.CustomFeeValidator
         }
 
         private static float GetTotalDebtForFeeValidationTypeExistingLocos(DisplayableDebt debt)
-		{
+        {
             ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
             if (locoDebt == null)
                 return debt.GetTotalPrice();
