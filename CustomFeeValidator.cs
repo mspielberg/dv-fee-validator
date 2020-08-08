@@ -3,7 +3,6 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityModManagerNet;
 
 namespace DvMod.CustomFeeValidator
@@ -12,16 +11,18 @@ namespace DvMod.CustomFeeValidator
     static class Main
     {
         public static bool enabled;
-        public static bool loggingEnabled;
+        public static Settings settings;
         public static UnityModManager.ModEntry mod;
 
         static bool Load(UnityModManager.ModEntry modEntry)
         {
+            try { settings = Settings.Load<Settings>(modEntry); } catch { }
             var harmony = new Harmony(modEntry.Info.Id);
             harmony.PatchAll();
 
             mod = modEntry;
             modEntry.OnGUI = OnGui;
+            modEntry.OnSaveGUI = OnSaveGui;
             modEntry.OnToggle = OnToggle;
             modEntry.OnUnload = OnUnload;
 
@@ -30,7 +31,12 @@ namespace DvMod.CustomFeeValidator
 
         static void OnGui(UnityModManager.ModEntry modEntry)
         {
-            loggingEnabled = GUILayout.Toggle(loggingEnabled, "enable logging");
+            settings.Draw(modEntry);
+        }
+
+        static void OnSaveGui(UnityModManager.ModEntry modEntry)
+        {
+            settings.Save(modEntry);
         }
 
         static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
@@ -49,7 +55,7 @@ namespace DvMod.CustomFeeValidator
 
         static void DebugLog(string message)
         {
-            if (loggingEnabled)
+            if (settings.isLoggingEnabled)
                 mod.Logger.Log(message);
         }
 
@@ -62,22 +68,42 @@ namespace DvMod.CustomFeeValidator
         {
             if (!enabled)
                 return debt.GetTotalPrice();
-            ExistingLocoDebt locoDebt = debt as ExistingLocoDebt;
-            if (locoDebt == null)
-                return debt.GetTotalPrice();
 
-            var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == locoDebt.ID);
-            if (locoInTrainset != null)
-            {
-                float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
-                DebugLog($"locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}");
-                return fees;
+            switch (settings.selectedValidationType) {
+                case FeeValidationType.LastLoco:
+                    return GetTotalDebtForFeeValidationTypeLastLoco(debt);
+                case FeeValidationType.ExistingLocos:
+                    return GetTotalDebtForFeeValidationTypeExistingLocos(debt);
             }
-            else
+
+            DebugLog($"This should never happen. In case it does, the selected fee type is {settings.selectedValidationType}.");
+            return debt.GetTotalPrice();
+        }
+
+        private static float GetTotalDebtForFeeValidationTypeLastLoco(DisplayableDebt debt)
+        {
+            if (debt is ExistingLocoDebt)
             {
-                DebugLog($"locomotive {debt.ID} not found in last trainset");
-                return debt.GetTotalPrice();
+                var locoInTrainset = PlayerManager.LastLoco?.trainset?.cars?.Find(car => car.ID == debt.ID);
+                if (locoInTrainset != null)
+                {
+                    float fees = debt.GetTotalPriceOfResources(nonConsumableTypes);
+                    DebugLog($"Locomotive {locoInTrainset.ID} is in player's last trainset. Fees without consumables = {fees}.");
+                    return fees;
+                }
+                DebugLog($"Locomotive {debt.ID} not found in last trainset.");
             }
+            return debt.GetTotalPrice();
+        }
+
+        private static float GetTotalDebtForFeeValidationTypeExistingLocos(DisplayableDebt debt)
+        {
+            if (debt is ExistingLocoDebt)
+            {
+                DebugLog($"Locomotive {debt.ID} still exists; ignoring its fees.");
+                return 0;
+            }
+            return debt.GetTotalPrice();
         }
 
         [HarmonyPatch(typeof(CareerManagerDebtController), "IsPlayerAllowedToTakeJob")]
