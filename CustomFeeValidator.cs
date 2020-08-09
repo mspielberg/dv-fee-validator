@@ -111,11 +111,9 @@ namespace DvMod.CustomFeeValidator
         {
             static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
-                var insts = new List<CodeInstruction>(instructions);
-                var calls = insts.FindAll(inst => inst.Calls(typeof(DisplayableDebt).GetMethod("GetTotalPrice")));
-                foreach (var call in calls)
-                    call.operand = typeof(Main).GetMethod("GetTotalDebtForJobPurposes");
-                return insts;
+                return instructions.MethodReplacer(
+                    typeof(DisplayableDebt).GetMethod("GetTotalPrice"),
+                    typeof(Main).GetMethod("GetTotalDebtForJobPurposes"));
             }
         }
     }
