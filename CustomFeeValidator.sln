@@ -1,25 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30225.117
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFeeValidator", "CustomFeeValidator.csproj", "{5ED3CD42-42AF-4E4B-88CC-6C10FF401BE0}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFeeValidator", "CustomFeeValidator.csproj", "{F6166B30-9F15-44CA-BEC4-C454C2A1C833}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5ED3CD42-42AF-4E4B-88CC-6C10FF401BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5ED3CD42-42AF-4E4B-88CC-6C10FF401BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5ED3CD42-42AF-4E4B-88CC-6C10FF401BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5ED3CD42-42AF-4E4B-88CC-6C10FF401BE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5E6C3B5E-F602-4E3B-BB40-543389DEEFA3}
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|x64.Build.0 = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Debug|x86.Build.0 = Debug|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|x64.ActiveCfg = Release|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|x64.Build.0 = Release|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6166B30-9F15-44CA-BEC4-C454C2A1C833}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
